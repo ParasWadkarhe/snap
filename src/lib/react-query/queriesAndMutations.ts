@@ -60,19 +60,22 @@ import {
   export const useGetPosts = () => {
     return useInfiniteQuery({
       queryKey: [QUERY_KEYS.GET_INFINITE_POSTS],
-      queryFn: getInfinitePosts ,
+      queryFn: getInfinitePosts,
       getNextPageParam: (lastPage) => {
-        // If there's no data, there are no more pages.
-        if (lastPage && lastPage.documents.length === 0) {
-          return null;
+        // Ensure lastPage is defined and has documents
+        if (!lastPage || lastPage.documents.length === 0) {
+          return null; // No more pages
         }
   
-        // Use the $id of the last document as the cursor.
-        const lastId = lastPage.documents[lastPage.documents.length - 1].$id;
-        return lastId;
+        // Use the numeric cursor (if $id can be converted to a number)
+        const lastId = Number(lastPage.documents[lastPage.documents.length - 1].$id);
+        return isNaN(lastId) ? null : lastId; // Handle invalid numeric conversion
       },
+      initialPageParam: 0, // Specify the initial page parameter
     });
   };
+  
+  
   
   export const useSearchPosts = (searchTerm: string) => {
     return useQuery({

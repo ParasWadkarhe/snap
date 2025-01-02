@@ -27,7 +27,9 @@ import {
     savePost,
     deleteSavedPost,
     getInfinitePosts,
+    
   } from "@/lib/appwrite/api";
+ import { IN_QUERY_KEYS } from "./queryInfinite";
   import { INewPost, INewUser, IUpdatePost, IUpdateUser } from "@/types";
   
   // ============================================================
@@ -74,7 +76,6 @@ import {
       initialPageParam: 0, // Specify the initial page parameter
     });
   };
-  
   
   
   export const useSearchPosts = (searchTerm: string) => {

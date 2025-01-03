@@ -1,4 +1,4 @@
-import { ID, Query } from "appwrite";
+import { ID, ImageGravity, Query } from "appwrite";
 
 import { appwriteConfig, account, databases, storage, avatars } from "./config";
 import { IUpdatePost, INewPost, INewUser, IUpdateUser } from "@/types";
@@ -21,12 +21,15 @@ export async function createUserAccount(user: INewUser) {
 
     const avatarUrl = avatars.getInitials(user.name);
 
+    // Convert avatarUrl (string) to URL type
+    const avatarUrlObject = new URL(avatarUrl);
+
     const newUser = await saveUserToDB({
       accountId: newAccount.$id,
       name: newAccount.name,
       email: newAccount.email,
       username: user.username,
-      imageUrl: avatarUrl,
+      imageUrl: avatarUrlObject, // Use the URL object here
     });
 
     return newUser;
@@ -35,6 +38,7 @@ export async function createUserAccount(user: INewUser) {
     return error;
   }
 }
+
 
 // ============================== SAVE USER TO DB
 export async function saveUserToDB(user: {
@@ -61,7 +65,7 @@ export async function saveUserToDB(user: {
 // ============================== SIGN IN
 export async function signInAccount(user: { email: string; password: string }) {
   try {
-    const session = await account.createEmailSession(user.email, user.password);
+    const session = await account.createSession(user.email, user.password);
 
     return session;
   } catch (error) {
@@ -184,7 +188,7 @@ export function getFilePreview(fileId: string) {
       fileId,
       2000,
       2000,
-      "top",
+      ImageGravity.Top,
       100
     );
 
@@ -225,6 +229,7 @@ export async function searchPosts(searchTerm: string) {
 }
 
 export async function getInfinitePosts({ pageParam }: { pageParam: number }) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const queries: any[] = [Query.orderDesc("$updatedAt"), Query.limit(10)];
 
   if (pageParam) {
@@ -271,7 +276,7 @@ export async function updatePost(post: IUpdatePost) {
 
   try {
     let image = {
-      imageUrl: post.imageUrl,
+      imageUrl: new URL(post.imageUrl), // Ensure this is a URL object
       imageId: post.imageId,
     };
 
@@ -280,20 +285,21 @@ export async function updatePost(post: IUpdatePost) {
       const uploadedFile = await uploadFile(post.file[0]);
       if (!uploadedFile) throw Error;
 
-      // Get new file url
+      // Get new file URL
       const fileUrl = getFilePreview(uploadedFile.$id);
       if (!fileUrl) {
         await deleteFile(uploadedFile.$id);
         throw Error;
       }
 
-      image = { ...image, imageUrl: fileUrl, imageId: uploadedFile.$id };
+      // Convert string to URL
+      image = { ...image, imageUrl: new URL(fileUrl), imageId: uploadedFile.$id };
     }
 
     // Convert tags into array
     const tags = post.tags?.replace(/ /g, "").split(",") || [];
 
-    //  Update post
+    // Update post
     const updatedPost = await databases.updateDocument(
       appwriteConfig.databaseID,
       appwriteConfig.postCollectionID,
@@ -328,7 +334,6 @@ export async function updatePost(post: IUpdatePost) {
     console.log(error);
   }
 }
-
 // ============================== DELETE POST
 export async function deletePost(postId?: string, imageId?: string) {
   if (!postId || !imageId) return;
@@ -449,6 +454,7 @@ export async function getRecentPosts() {
 
 // ============================== GET USERS
 export async function getUsers(limit?: number) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const queries: any[] = [Query.orderDesc("$createdAt")];
 
   if (limit) {

@@ -5,32 +5,36 @@ import useDebounce from "@/hooks/useDebounce";
 import { useGetPosts, useSearchPosts } from "@/lib/react-query/queriesAndMutations";
 import { Loader } from "lucide-react";
 import { useEffect, useState } from "react";
-import {useInView} from 'react-intersection-observer';
+import { useInView } from "react-intersection-observer";
 
 const Explore = () => {
   const [searchValue, setSearchValue] = useState("");
-  const {ref,inView} = useInView();
-  const {data: posts, fetchNextPage, hasNextPage} = useGetPosts();
+  const { ref, inView } = useInView();
+  const { data: posts, fetchNextPage, hasNextPage } = useGetPosts();
 
-  const debounceValue = useDebounce(searchValue,500);
-  const {data: searchedPosts, isFetching : isSearchFetching } = useSearchPosts(debounceValue);
+  const debounceValue = useDebounce(searchValue, 500);
+  const { data: searchedPosts, isFetching: isSearchFetching } = useSearchPosts(debounceValue);
 
-  useEffect(()=>{
-    if(inView && !searchValue) fetchNextPage();
-  },[inView,searchValue])
+  useEffect(() => {
+    if (inView && !searchValue) {
+      fetchNextPage();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [inView, searchValue]);
+  
 
-  if(!posts){
-    return(
+  if (!posts) {
+    return (
       <div className="flex-center w-full h-full">
-        <Loader/>
+        <Loader />
       </div>
-    )
+    );
   }
 
   const shouldShowSearchResults = searchValue !== "";
   const shouldShowPosts =
     !shouldShowSearchResults &&
-    posts?.pages.every((item) => item.documents.length === 0);
+    posts?.pages.every((item) => item?.documents?.length === 0); // Added optional chaining
 
   return (
     <div className="explore-container">
@@ -67,20 +71,28 @@ const Explore = () => {
       <div className="flex flex-wrap gap-9 w-full max-w-5xl">
         {shouldShowSearchResults ? (
           <SearchResults
-            isSearchhFetching = {isSearchFetching}
-            searchedPosts = {searchedPosts}
-          />
+          isSearchFetching={isSearchFetching}
+          searchedPosts={
+            searchedPosts
+              ? { documents: searchedPosts.documents || [] } // Ensure it matches the expected structure
+              : { documents: [] } // Default to an empty structure
+          }
+        />
+        
+        
         ) : shouldShowPosts ? (
           <p className="text-light-4 mt-4 text-center w-full">End of Posts</p>
         ) : (
-          posts.pages.map((item, index) => (
-            <GridPostList key={`page-${index}`} posts={item.documents} />
-          ))
+          posts.pages.map((item, index) =>
+            item?.documents ? ( // Check if `item` and `item.documents` exist
+              <GridPostList key={`page-${index}`} posts={item.documents} />
+            ) : null
+          )
         )}
       </div>
-      {hasNextPage && !searchValue &&(
+      {hasNextPage && !searchValue && (
         <div ref={ref} className="m-10">
-          <Loader/>
+          <Loader />
         </div>
       )}
     </div>

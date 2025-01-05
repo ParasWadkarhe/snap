@@ -4,14 +4,14 @@ export type INavLink = {
     label: string;
   };
   
-  export type IContextType ={
+  export interface IContextType {
     user: IUser;
-    isLoading: boolean,
-    setUser : React.Dispatch<React.SetStateAction<IUser>>,
-    isAuthenticated:boolean,
-    setIsAuthenticated:React.Dispatch<React.SetStateAction<boolean>>,
-    checkAuthUser: () => Promise<boolean>
-  };
+    isLoading: boolean;
+    isAuthenticated: boolean;
+    setUser: React.Dispatch<React.SetStateAction<IUser>>;
+    setIsAuthenticated: React.Dispatch<React.SetStateAction<boolean>>;
+    checkAuthUser: () => Promise<boolean>;
+  }
 
   export type IUpdateUser = {
     userId: string;
@@ -40,14 +40,14 @@ export type INavLink = {
     tags?: string;
   };
   
-  export type IUser = {
+  export interface IUser {
     id: string;
     name: string;
     username: string;
     email: string;
-    imageUrl: string;
-    bio: string;
-  };
+    imageUrl?: string;
+    bio?: string;
+  }
   
   export type INewUser = {
     name: string;

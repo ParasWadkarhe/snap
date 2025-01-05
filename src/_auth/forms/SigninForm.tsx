@@ -18,6 +18,7 @@ import { Link, useNavigate } from "react-router-dom";
 // import { createUserAccount } from "@/lib/appwrite/api";
 import { useSignInAccount } from "@/lib/react-query/queriesAndMutations";
 import { useUserContext } from "@/context/AuthContext";
+import p from '/assets/images/profile.png';
 
 const SigninForm = () => {
   const { toast } = useToast();
@@ -61,7 +62,7 @@ const SigninForm = () => {
   return (
     <Form {...form}>
       <div className="sm:w-420 flex-col flex-center">
-        <img src="/assets/images/logo.svg" alt="logo" />
+        <img src={p} alt="logo" />
         <h2 className="h3-bold md:h2-bold pt-5 sm:pt-12 ">
           Log in to your account
         </h2>
